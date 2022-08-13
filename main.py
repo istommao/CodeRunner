@@ -5,8 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import BaseModel
 
-from core.executor import exec_run_python
-
 from core.executor import exec_run_python, get_container
 
 app = FastAPI()
@@ -38,10 +36,11 @@ def index_api():
     return {"Name": "CoderRunner", "Version": version}
 
 
-@app.post("/api/runcode/")
-def runcode_api(form: CodeRunForm):
+
+def runcode_action(form: CodeRunForm):
     LANGUAGES = {
-        "python": get_container('py3mod')
+        "python": get_container('codebox-python3'),
+        "python3": get_container('codebox-python3')
     }
     if form.language  not in LANGUAGES:
         return {"result": "Unsupported language", "code": 400}
@@ -53,3 +52,13 @@ def runcode_api(form: CodeRunForm):
     result = exec_run_python(container, form.code, user)
 
     return {"result": result, "code": 0}
+
+
+@app.post("/api/coderun/")
+def codecode_api(form: CodeRunForm):
+    return runcode_action(form)
+
+
+@app.post("/api/runcode/")
+def runcode_api(form: CodeRunForm):
+    return runcode_action(form)
