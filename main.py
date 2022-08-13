@@ -6,13 +6,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from core.executor import exec_run_python
-from core.docker_client import DockerClient
 
+from core.executor import exec_run_python, get_container
 
 app = FastAPI()
+
 origins = [
     "*",
 ]
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,7 +23,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 
 class CodeRunForm(BaseModel):
@@ -37,11 +38,18 @@ def index_api():
     return {"Name": "CoderRunner", "Version": version}
 
 
-@app.post("/api/coderun/")
+@app.post("/api/runcode/")
 def runcode_api(form: CodeRunForm):
-    container = DockerClient.containers.get('py3mod')
+    LANGUAGES = {
+        "python": get_container('py3mod')
+    }
+    if form.language  not in LANGUAGES:
+        return {"result": "Unsupported language", "code": 400}
 
     user = "codemax"
+
+    container = LANGUAGES[form.language]
+
     result = exec_run_python(container, form.code, user)
 
     return {"result": result, "code": 0}
