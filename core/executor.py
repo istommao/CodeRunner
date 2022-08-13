@@ -23,8 +23,8 @@ def get_container(container_id: str):
     return Client.containers.get(container_id)
 
 
-def exec_run_python(container, code: str):
-    result = container.exec_run(f'python /usr/src/app/runcode.py "{code}"')
+def exec_run_python(container, code: str, user: str):
+    result = container.exec_run(['python', '/usr/src/app/runcode.py', code], user=user)
 
     output = result.output.decode("utf-8")
 
